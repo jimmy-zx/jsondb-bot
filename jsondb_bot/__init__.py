@@ -13,7 +13,12 @@ class App:
         self.client.event(self.on_ready)
         self.client.event(self.on_message)
         self.logger = logging.getLogger('discord')
-        self.regs: dict[int, list[str]] = regs or {}
+        self.regs: dict[str, list[str]] = regs or {}
+
+        self.cmd: str = None
+        self.userid: str = None
+        self.message = None
+        self.channel = None
 
     async def on_ready(self) -> None:
         self.logger.info(f'logged in as {self.client.user}')
@@ -23,38 +28,40 @@ class App:
             return
         if not message.content.startswith(App.PREFIX):
             return
-        self.logger.debug(f'message: {message.content}')
-        cmd = message.content.split('$')[1]
-        func = getattr(self, f'cmd_{cmd}', None)
+        self.cmd = message.content.split('$')[1]
+        self.userid = str(message.author.id)
+        self.message = message
+        self.channel = message.channel
+        func = getattr(self, f'cmd_{self.cmd}', None)
         if func:
-            await func(message)
+            await func()
             return
         await message.channel.send('Unknown message')
 
 
-    async def cmd_ping(self, message):
-        await message.channel.send('pong')
+    async def cmd_ping(self):
+        await self.channel.send('pong')
 
-    async def cmd_reg(self, message):
-        cmd = message.content.removeprefix(App.PREFIX)
+    async def cmd_reg(self):
+        cmd = self.message.content.removeprefix(App.PREFIX)
         if not cmd.startswith('reg$'):
-            await message.channel.send('Usage: reg$[data]')
+            await self.channel.send('Usage: reg$[data]')
             return
         try:
             data = json.loads(cmd.removeprefix('reg$'))
-            if message.author.id not in self.regs:
-                self.regs[message.author.id] = []
-            self.regs[message.author.id].append(data)
-            await message.channel.send('registered')
+            if self.userid not in self.regs:
+                self.regs[self.userid] = []
+            self.regs[self.userid].append(data)
+            await self.channel.send('registered')
         except ValueError:
-            await message.channel.send('data is not valid json')
+            await self.channel.send('data is not valid json')
 
-    async def cmd_dmping(self, message):
-        await message.author.send('pong')
+    async def cmd_dmping(self):
+        await self.message.author.send('pong')
 
-    async def cmd_check(self, message):
-        await message.channel.send(json.dumps(self.regs.get(message.author.id, None)))
+    async def cmd_check(self):
+        await self.channel.send(json.dumps(self.regs.get(self.userid, None)))
 
-    async def cmd_dereg(self, message):
-        del self.regs[message.author.id]
-        await message.channel.send('de-registered')
+    async def cmd_dereg(self):
+        del self.regs[self.userid]
+        await self.channel.send('de-registered')
