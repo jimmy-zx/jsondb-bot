@@ -35,8 +35,12 @@ class App:
         func = getattr(self, f'cmd_{self.cmd}', None)
         if func:
             await func()
-            return
-        await message.channel.send('Unknown message')
+        else:
+            await message.channel.send('Unknown message')
+        self.cmd = None
+        self.userid = None
+        self.message = None
+        self.channel = None
 
 
     async def cmd_ping(self):
