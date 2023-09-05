@@ -41,8 +41,7 @@ class App:
             await message.channel.send('Usage: reg$[data]')
             return
         try:
-            data = cmd.removeprefix('reg$')
-            json.loads(data)  # validate for valid json
+            data = json.loads(cmd.removeprefix('reg$'))
             if message.author.id not in self.regs:
                 self.regs[message.author.id] = []
             self.regs[message.author.id].append(data)
