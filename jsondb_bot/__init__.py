@@ -1,10 +1,9 @@
-import os
 import logging
 import json
 
-import dotenv
 import discord
 
+__all__ = ['App']
 
 class App:
     PREFIX = '$'
@@ -60,24 +59,3 @@ class App:
     async def cmd_dereg(self, message):
         del self.regs[message.author.id]
         await message.channel.send('de-registered')
-
-
-if __name__ == '__main__':
-    dotenv.load_dotenv()
-    token = os.getenv('DISCORD_TOKEN')
-    dbfile = os.getenv('DBFILE', 'data/regs.json')
-
-    try:
-        with open(dbfile, 'r') as f:
-            regs = json.load(f)
-    except FileNotFoundError:
-        regs = {}
-
-    intents = discord.Intents.default()
-    intents.message_content = True
-    app = App(intents, regs=regs)
-
-    app.client.run(token)
-
-    with open(dbfile, 'w') as f:
-        json.dump(app.regs, f)

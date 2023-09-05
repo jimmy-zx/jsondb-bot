@@ -1,0 +1,16 @@
+[project]
+name = "jsondb_bot"
+version = "0.0.1"
+description = "A simple discord bot to record json data."
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "discord.py",
+    "python-dotenv",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/jimmy-zx/jsondb-bot"
+
+[tool.setuptools]
+packages = ["jsondb_bot"]
